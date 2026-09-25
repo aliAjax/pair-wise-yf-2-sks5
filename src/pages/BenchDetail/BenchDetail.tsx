@@ -26,7 +26,10 @@ import {
 } from '@/types';
 import type { TimePeriodType } from '@/types';
 import Rating from '@/components/Rating/Rating';
+import AdoptionPanel from '@/components/AdoptionPanel/AdoptionPanel';
+import AdoptionBadge from '@/components/AdoptionBadge/AdoptionBadge';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
+import { getBenchStatus, getCurrentAdoption, getNextMaintenanceDate, formatDate } from '@/utils/adoption';
 
 export default function BenchDetail() {
   const { id } = useParams<{ id: string }>();
@@ -61,6 +64,10 @@ export default function BenchDetail() {
   const comfortScore = calculateComfortScore(bench);
   const comfortLevel = getComfortLevel(comfortScore);
   const comfortColor = getComfortColor(comfortScore);
+
+  const adoptionStatus = getBenchStatus(bench);
+  const currentAdoption = getCurrentAdoption(bench);
+  const nextMaintenance = getNextMaintenanceDate(bench, currentAdoption);
 
   const timePeriodIcons: Record<TimePeriodType, typeof Sunrise> = {
     morning: Sunrise,
@@ -112,6 +119,19 @@ export default function BenchDetail() {
                   <div className="flex items-center gap-1 text-ink-light">
                     <MapPin className="w-4 h-4 flex-shrink-0" />
                     <span>{bench.location}</span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-3 flex-wrap">
+                    <AdoptionBadge status={adoptionStatus} size="md" />
+                    {currentAdoption && (
+                      <span className="text-sm text-moss-green font-medium">
+                        {currentAdoption.groupName}
+                      </span>
+                    )}
+                    {currentAdoption && adoptionStatus === 'active' && (
+                      <span className="text-xs text-ochre">
+                        下次养护日：{nextMaintenance ? formatDate(nextMaintenance) : '本轮已完成'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -214,6 +234,8 @@ export default function BenchDetail() {
         </div>
 
         <div className="space-y-6">
+          <AdoptionPanel bench={bench} />
+
           <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-2">
             <h2 className="font-serif text-lg font-semibold text-deep-brown mb-4">
               分时段体验
@@ -279,6 +301,10 @@ export default function BenchDetail() {
               <div className="flex justify-between">
                 <span className="text-ink-light">时段记录</span>
                 <span className="text-deep-brown">{bench.experiences.length} 条</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-light">养护记录</span>
+                <span className="text-deep-brown">{bench.maintenanceRecords.length} 条</span>
               </div>
             </div>
           </div>
