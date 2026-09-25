@@ -26,6 +26,7 @@ import {
 } from '@/types';
 import type { TimePeriodType } from '@/types';
 import Rating from '@/components/Rating/Rating';
+import AdoptionPanel from '@/components/Adoption/AdoptionPanel';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
 
 export default function BenchDetail() {
@@ -214,7 +215,9 @@ export default function BenchDetail() {
         </div>
 
         <div className="space-y-6">
-          <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-2">
+          <AdoptionPanel bench={bench} />
+
+          <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-4">
             <h2 className="font-serif text-lg font-semibold text-deep-brown mb-4">
               分时段体验
             </h2>
@@ -259,7 +262,7 @@ export default function BenchDetail() {
             )}
           </div>
 
-          <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-3">
+          <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-5">
             <h3 className="font-serif text-sm font-semibold text-deep-brown mb-3">
               档案信息
             </h3>
@@ -279,6 +282,10 @@ export default function BenchDetail() {
               <div className="flex justify-between">
                 <span className="text-ink-light">时段记录</span>
                 <span className="text-deep-brown">{bench.experiences.length} 条</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-light">养护记录</span>
+                <span className="text-deep-brown">{bench.maintenanceRecords.length} 条</span>
               </div>
             </div>
           </div>

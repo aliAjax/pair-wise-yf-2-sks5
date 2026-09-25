@@ -13,6 +13,27 @@ export interface BenchExperience {
   rating: number;
 }
 
+export interface Adoption {
+  id: string;
+  benchId: string;
+  groupName: string;
+  startDate: string;
+  endDate: string;
+  intervalDays: number;
+  createdAt: string;
+}
+
+export interface MaintenanceRecord {
+  id: string;
+  benchId: string;
+  adoptionId: string;
+  date: string;
+  notes: string;
+  createdAt: string;
+}
+
+export type AdoptionStatus = 'active' | 'pending';
+
 export interface Bench {
   id: string;
   name: string;
@@ -28,6 +49,8 @@ export interface Bench {
   rating: number;
   review: string;
   experiences: BenchExperience[];
+  adoptions: Adoption[];
+  maintenanceRecords: MaintenanceRecord[];
   createdAt: string;
   updatedAt: string;
 }
@@ -84,4 +107,9 @@ export const TIME_PERIOD_ICONS: Record<TimePeriodType, string> = {
   afternoon: 'cloud-sun',
   evening: 'sunset',
   night: 'moon',
+};
+
+export const ADOPTION_STATUS_LABELS: Record<AdoptionStatus, string> = {
+  active: '认养中',
+  pending: '待认养',
 };

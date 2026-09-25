@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Armchair, Info } from 'lucide-react';
+import { MapPin, Armchair, Info, CircleDashed } from 'lucide-react';
 import { useBenchStore } from '@/store/useBenchStore';
 import { calculateComfortScore, getComfortColor } from '@/utils/comfort';
+import { getActiveAdoption, getNextMaintenanceDate, formatDate } from '@/utils/adoption';
 import type { Bench } from '@/types';
 
 export default function MapPage() {
@@ -15,6 +16,8 @@ export default function MapPage() {
       initialize();
     }
   }, [initialized, initialize]);
+
+  const pendingCount = benches.filter((bench) => !getActiveAdoption(bench)).length;
 
   const getPositionStyle = (bench: Bench) => {
     const latRange = { min: 31.22, max: 31.25 };
@@ -61,7 +64,9 @@ export default function MapPage() {
             const position = getPositionStyle(bench);
             const comfortScore = calculateComfortScore(bench);
             const colorClass = getComfortColor(comfortScore);
-            
+            const activeAdoption = getActiveAdoption(bench);
+            const nextMaintenance = getNextMaintenanceDate(bench);
+
             return (
               <button
                 key={bench.id}
@@ -74,8 +79,11 @@ export default function MapPage() {
                 <div className={`relative ${
                   hoveredBench?.id === bench.id ? 'scale-125 z-10' : 'z-0'
                 } transition-transform duration-200`}>
+                  {!activeAdoption && (
+                    <div className="absolute -inset-1.5 rounded-full border-2 border-dashed border-ochre/70" />
+                  )}
                   <MapPin
-                    className={`w-8 h-8 ${colorClass} drop-shadow-md group-hover:drop-shadow-lg transition-all`}
+                    className={`w-8 h-8 ${activeAdoption ? colorClass : 'text-ochre'} drop-shadow-md group-hover:drop-shadow-lg transition-all`}
                     fill="currentColor"
                   />
                   <div className="absolute top-1 left-1/2 -translate-x-1/2">
@@ -84,17 +92,40 @@ export default function MapPage() {
                 </div>
 
                 {hoveredBench?.id === bench.id && (
-                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 translate-y-full w-48 paper-texture rounded-lg shadow-paper-hover p-3 z-20 pointer-events-none">
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 translate-y-full w-52 paper-texture rounded-lg shadow-paper-hover p-3 z-20 pointer-events-none">
                     <h4 className="font-serif font-medium text-deep-brown text-sm mb-1 line-clamp-1">
                       {bench.name}
                     </h4>
                     <p className="text-xs text-ink-light line-clamp-1 mb-2">
                       {bench.location}
                     </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-ink-light">舒适度</span>
                       <span className={`text-sm font-medium ${colorClass}`}>
                         {comfortScore}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-ink-light">认养状态</span>
+                      {activeAdoption ? (
+                        <span className="text-xs font-medium text-moss-green">认养中</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-ochre">
+                          <CircleDashed className="w-3 h-3" />
+                          待认养
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-ink-light">认养小组</span>
+                      <span className="text-xs text-deep-brown line-clamp-1 max-w-[7rem]">
+                        {activeAdoption ? activeAdoption.groupName : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-ink-light">下次养护日</span>
+                      <span className="text-xs text-deep-brown">
+                        {nextMaintenance ? formatDate(nextMaintenance) : '—'}
                       </span>
                     </div>
                   </div>
@@ -125,6 +156,13 @@ export default function MapPage() {
                 <MapPin className="w-4 h-4 text-ink-light" fill="currentColor" />
                 <span className="text-xs text-ink-light">一般/较差</span>
               </div>
+              <div className="flex items-center gap-2 pt-1.5 mt-1.5 border-t border-deep-brown/10">
+                <span className="relative flex items-center justify-center w-4 h-4">
+                  <span className="absolute inset-0 rounded-full border border-dashed border-ochre/70" />
+                  <MapPin className="w-3 h-3 text-ochre" fill="currentColor" />
+                </span>
+                <span className="text-xs text-ink-light">待认养</span>
+              </div>
             </div>
           </div>
         </div>
@@ -133,6 +171,8 @@ export default function MapPage() {
       <div className="mt-4 text-center">
         <p className="text-sm text-ink-light">
           共 <span className="font-medium text-deep-brown">{benches.length}</span> 张长椅
+          {' · '}
+          <span className="font-medium text-ochre">{pendingCount}</span> 个待认养
         </p>
       </div>
     </div>
